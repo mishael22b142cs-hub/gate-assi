@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/* Add this to your index.css file */
+.transition-transform {
+  transition: transform 0.5s ease-in-out;
+}
+
+/* Add this to your index.css file */
+input:focus {
+  outline: none;
+  border-color: #3b82f6; /* Blue border on focus */
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); /* Blue shadow on focus */
+}
+
+/* Add this to your index.css file */
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animated-gradient {
+  background: linear-gradient(135deg, #6a11cb, #2575fc, #ff7e5f);
+  background-size: 200% 200%;
+  animation: gradientAnimation 10s ease infinite;
+}
+
+/* Add this to your index.css file */
+.form-transition {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.form-hidden {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.form-visible {
+  opacity: 1;
+  transform: translateX(0);
+}

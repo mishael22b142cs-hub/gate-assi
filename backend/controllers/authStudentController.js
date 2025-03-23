@@ -83,7 +83,7 @@ export const studentLogin = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
 
-        return res.json({ success: true, message: token });
+        return res.json({ success: true });
 
     } catch (error) {
         return res.json({ success: false, message: error.message });
@@ -104,10 +104,6 @@ export const logout = async (req, res) => {
     } catch (error) {
         return res.json({ success: false, menubar: error.message });
     }
-}
-
-export const collectData = async (req, res) => {
-    const { } = req.body;
 }
 
 // Student profile update

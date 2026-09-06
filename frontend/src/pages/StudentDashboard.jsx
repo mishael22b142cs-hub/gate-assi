@@ -1,26 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../lib/api';
 import Header from '../components/studentdashboard/Header';
 import Sidebar from '../components/studentdashboard/Sidebar';
 import DashboardHome from '../components/studentdashboard/DashboardHome';
 import DashboardProfile from '../components/studentdashboard/DashboardProfile';
 import DashboardStudyMaterials from '../components/studentdashboard/DashboardStudyMaterials';
 import DashboardMockTests from '../components/studentdashboard/DashboardMockTests';
-import CommunitiesList from '../components/studentdashboard/CommunitiesList'; // New component
-import CommunityDetails from '../components/studentdashboard/CommunityDetails'; // New component
+import CommunitiesList from '../components/studentdashboard/CommunitiesList';
+import CommunityDetails from '../components/studentdashboard/CommunityDetails';
 import Footer from '../components/studentdashboard/Footer';
 
 const StudentDashboard = () => {
-    const [activeTab, setActiveTab] = useState('home'); // State to track active tab
-    const [selectedCommunity, setSelectedCommunity] = useState(null); // State to track selected community
+    const navigate = useNavigate();
 
-    // Dummy student data (replace with actual data from backend)
-    const student = {
-        name: 'John Doe',
-        branch: 'Computer Science',
-        year: '3rd Year',
-    };
+    const [student, setStudent] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('home');
+    const [selectedCommunity, setSelectedCommunity] = useState(null);
 
-    // Dummy data for communities
+    // Dummy data for communities (no community backend yet)
     const [communities, setCommunities] = useState([
         {
             id: 1,
@@ -38,7 +37,50 @@ const StudentDashboard = () => {
         },
     ]);
 
-    // Handle joining a community
+    // Load the logged-in student's real details
+    useEffect(() => {
+        let active = true;
+
+        const loadProfile = async () => {
+            try {
+                const { data } = await api.get('/api/student/auth/profile');
+                if (!active) return;
+
+                if (data?.success && data.student) {
+                    setStudent(data.student);
+                } else {
+                    navigate('/login');
+                }
+            } catch {
+                if (active) navigate('/login');
+            } finally {
+                if (active) setLoading(false);
+            }
+        };
+
+        loadProfile();
+        return () => {
+            active = false;
+        };
+    }, [navigate]);
+
+    const handleLogout = async () => {
+        try {
+            await api.post('/api/student/auth/logout');
+        } catch {
+            // ignore network errors on logout
+        }
+        navigate('/login');
+    };
+
+    const handleProfileUpdate = async (updates) => {
+        const { data } = await api.put('/api/student/auth/profile', updates);
+        if (data?.success && data.student) {
+            setStudent(data.student);
+        }
+        return data;
+    };
+
     const handleJoinCommunity = (id) => {
         setCommunities((prev) =>
             prev.map((community) =>
@@ -49,46 +91,56 @@ const StudentDashboard = () => {
         );
     };
 
-    // Handle leaving a community
     const handleLeaveCommunity = (id) => {
         setCommunities((prev) =>
             prev.map((community) =>
                 community.id === id
-                    ? { ...community, isJoined: false, membersCount: community.membersCount - 1 }
+                    ? { ...community, isJoined: false, membersCount: Math.max(0, community.membersCount - 1) }
                     : community
             )
         );
     };
 
-    // Handle logout
-    const handleLogout = () => {
-        console.log('User logged out');
-        // Redirect to login page or clear session
-    };
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-100 text-gray-600">
+                Loading your dashboard...
+            </div>
+        );
+    }
+
+    if (!student) return null;
+
+    const displayName = student.name || 'Student';
+    // Keep the currently selected community in sync with join/leave changes
+    const currentCommunity = selectedCommunity
+        ? communities.find((c) => c.id === selectedCommunity.id) || selectedCommunity
+        : null;
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-100">
-            {/* Header */}
-            <Header studentName={student.name} onLogout={handleLogout} />
+            <Header studentName={displayName} onLogout={handleLogout} />
 
-            {/* Main Content */}
             <div className="flex flex-1">
-                {/* Sidebar */}
                 <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-                {/* Main Content Area */}
                 <main className="flex-1 p-6">
                     {activeTab === 'home' && <DashboardHome student={student} />}
-                    {activeTab === 'profile' && <DashboardProfile student={student} />}
+                    {activeTab === 'profile' && (
+                        <DashboardProfile student={student} onUpdate={handleProfileUpdate} />
+                    )}
                     {activeTab === 'studyMaterials' && <DashboardStudyMaterials />}
                     {activeTab === 'mockTests' && <DashboardMockTests />}
                     {activeTab === 'communities' && (
                         <div>
                             <h2 className="text-2xl font-bold text-gray-800 mb-6">Communities</h2>
-                            {selectedCommunity ? (
+                            {currentCommunity ? (
                                 <CommunityDetails
-                                    community={selectedCommunity}
+                                    community={currentCommunity}
                                     onBack={() => setSelectedCommunity(null)}
+                                    onJoin={handleJoinCommunity}
+                                    onLeave={handleLeaveCommunity}
+                                    currentUserName={displayName}
                                 />
                             ) : (
                                 <CommunitiesList
@@ -103,7 +155,6 @@ const StudentDashboard = () => {
                 </main>
             </div>
 
-            {/* Footer */}
             <Footer />
         </div>
     );

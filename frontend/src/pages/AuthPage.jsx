@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faFacebookF, faTwitter } from '@fortawesome/free-brands-svg-icons';
+import api from '../lib/api';
+import ProfileCompletionModal from '../components/ProfileCompletionModal';
 
 const AuthPage = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -29,14 +30,10 @@ const AuthPage = () => {
         setLoading(true);
 
         try {
-            const { data } = await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/student/auth/login`,
-                {
-                    email: formData.email,
-                    password: formData.password,
-                },
-                { withCredentials: true }
-            );
+            const { data } = await api.post('/api/student/auth/login', {
+                email: formData.email,
+                password: formData.password,
+            });
 
             if (data?.success) {
                 navigate('/student-dashboard');
@@ -54,20 +51,22 @@ const AuthPage = () => {
     const handleSignup = async (e) => {
         e.preventDefault();
         setError('');
+
+        if (formData.password !== formData.confirmpassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const { data } = await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/student/auth/signup`,
-                {
-                    name: formData.name,
-                    email: formData.email,
-                    phoneno: formData.phoneno,
-                    password: formData.password,
-                    confirmpassword: formData.confirmpassword,
-                },
-                { withCredentials: true }
-            );
+            const { data } = await api.post('/api/student/auth/signup', {
+                name: formData.name,
+                email: formData.email,
+                phoneno: formData.phoneno,
+                password: formData.password,
+                confirmpassword: formData.confirmpassword,
+            });
 
             if (data?.success) {
                 setShowProfileModal(true);
@@ -82,8 +81,18 @@ const AuthPage = () => {
         }
     };
 
-    const handleProfileSubmit = (formData) => {
-        console.log('Profile Data:', formData);
+    const handleProfileSubmit = async (profileData) => {
+        // The signup response already set the auth cookie, so we can save the
+        // profile straight away. Don't block dashboard entry if this call fails.
+        try {
+            await api.put('/api/student/auth/profile', {
+                name: profileData.fullName || formData.name,
+                branch: profileData.branch,
+                yearOfStudy: profileData.yearOfStudy,
+            });
+        } catch (profileError) {
+            console.error('Could not save profile details:', profileError);
+        }
         setShowProfileModal(false);
         navigate('/student-dashboard');
     };
@@ -104,7 +113,7 @@ const AuthPage = () => {
                         <div>
                             <label className="block text-gray-700 mb-2">Email:</label>
                             <input
-                                type="text"
+                                type="email"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}

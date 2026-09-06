@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# env files (set these as environment variables in Vercel instead)
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# build output
+frontend/dist/
+dist/
+
+# vercel
+.vercel
+
+# misc
+.DS_Store
+*.log

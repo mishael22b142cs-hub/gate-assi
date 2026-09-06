@@ -13,6 +13,8 @@ dist-ssr
 *.local
 .env
 .env.*
+# keep the production config (no secrets, just an empty API URL for same-origin requests)
+!.env.production
 
 # Editor directories and files
 .vscode/*
@@ -24,3 +26,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.vercel

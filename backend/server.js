@@ -1,27 +1,16 @@
-import express from "express";
-import cors from "cors";
 import "dotenv/config";
-import cookieParser from "cookie-parser";
+import app from "./app.js";
 
-import connectDB from "./config/mongodb.js"; // MongoDB connection
-import authStudentRouter from "./routes/authStudentRoutes.js"; // Student auth routes
-
-const app = express();
+// Local development entrypoint. On Vercel the app is served by api/index.js
+// as a serverless function and this file is not used.
 const port = process.env.PORT || 4000;
 
-// Connect to MongoDB
-connectDB();
+const server = app.listen(port, () => console.log(`Server started on PORT:${port}`));
 
-const allowedOrigins = ["http://localhost:5173"]; // Change this if needed
-
-// Middleware
-app.use(express.json());
-app.use(cookieParser());
-app.use(cors({ origin: allowedOrigins, credentials: true }));
-
-// API Endpoints
-app.get("/", (req, res) => res.send("API Working"));
-app.use("/api/student/auth", authStudentRouter); // All student auth routes
-
-// Start Server
-app.listen(port, () => console.log(`Server started on PORT:${port}`));
+server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+        console.error(`Port ${port} is already in use. Stop the other process or set a different PORT in .env.`);
+        process.exit(1);
+    }
+    throw err;
+});

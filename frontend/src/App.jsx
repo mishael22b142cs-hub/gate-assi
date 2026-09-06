@@ -5,7 +5,6 @@ import AuthPage from './pages/AuthPage';
 import StudentDashboard from './pages/StudentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Navbar from './components/Navbar';
-import ProfileCompletionModal from './components/ProfileCompletionModal';
 
 const App = () => {
   return (

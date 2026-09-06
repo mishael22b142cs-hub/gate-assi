@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const CommunityPosts = ({ communityId }) => {
+const CommunityPosts = ({ currentUserName = 'You' }) => {
     const [posts, setPosts] = useState([
         { id: 1, author: 'John Doe', content: 'How do I solve this problem?', timestamp: '2 hours ago' },
         { id: 2, author: 'Jane Smith', content: 'Here’s a great resource for GATE prep!', timestamp: '1 day ago' },
@@ -11,9 +11,9 @@ const CommunityPosts = ({ communityId }) => {
     const handlePostSubmit = (e) => {
         e.preventDefault();
         if (newPost.trim()) {
-            setPosts([
-                { id: posts.length + 1, author: 'You', content: newPost, timestamp: 'Just now' },
-                ...posts,
+            setPosts((current) => [
+                { id: Date.now(), author: currentUserName, content: newPost.trim(), timestamp: 'Just now' },
+                ...current,
             ]);
             setNewPost('');
         }

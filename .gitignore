@@ -4,6 +4,7 @@ node_modules/
 
 # env files (set these as environment variables in Vercel instead)
 .env
+.env.*
 .env.local
 .env.*.local
 backend/.env

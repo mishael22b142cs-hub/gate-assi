@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 
 import connectDB from "./config/mongodb.js"; // MongoDB connection (cached)
 import authStudentRouter from "./routes/authStudentRoutes.js"; // Student auth routes
+import testResultRouter from "./routes/testResultRoutes.js"; // Student mock test results
 
 const app = express();
 
@@ -38,5 +39,6 @@ app.use(async (req, res, next) => {
 app.get("/", (req, res) => res.send("API Working"));
 app.get("/api", (req, res) => res.json({ success: true, message: "API Working" }));
 app.use("/api/student/auth", authStudentRouter); // All student auth routes
+app.use("/api/student/results", testResultRouter); // Mock test score history
 
 export default app;

@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from 'react';
+// Mock test UI: 5 fixed questions, submits the score to the backend, and shows score history.
+import React, { useEffect, useMemo, useState } from 'react';
+import api from '../../lib/api';
 
 const QUESTIONS = [
     {
@@ -42,6 +44,8 @@ const DashboardMockTests = () => {
     const [started, setStarted] = useState(false);
     const [answers, setAnswers] = useState({});
     const [submitted, setSubmitted] = useState(false);
+    const [history, setHistory] = useState([]);
+    const [saveError, setSaveError] = useState('');
 
     const score = useMemo(
         () => QUESTIONS.reduce((total, q) => (answers[q.id] === q.answer ? total + 1 : total), 0),
@@ -49,6 +53,19 @@ const DashboardMockTests = () => {
     );
 
     const allAnswered = QUESTIONS.every((q) => answers[q.id] !== undefined);
+
+    // 🔴 Load the student's past scores once, so "Score history" has data without needing a submit first.
+    useEffect(() => {
+        const loadHistory = async () => {
+            try {
+                const { data } = await api.get('/api/student/results');
+                if (data.success) setHistory(data.results);
+            } catch {
+                // history is a nice-to-have; silently ignore load failures
+            }
+        };
+        loadHistory();
+    }, []);
 
     const startTest = () => {
         setAnswers({});
@@ -59,6 +76,23 @@ const DashboardMockTests = () => {
     const selectOption = (questionId, optionIndex) => {
         if (submitted) return;
         setAnswers((current) => ({ ...current, [questionId]: optionIndex }));
+    };
+
+    // 🔴 Submit the test, then save the score to the backend and refresh history.
+    const submitTest = async () => {
+        setSubmitted(true);
+        setSaveError('');
+
+        try {
+            const { data } = await api.post('/api/student/results', { score, total: QUESTIONS.length });
+            if (data.success) {
+                setHistory((current) => [data.result, ...current].slice(0, 10));
+            } else {
+                setSaveError(data.message || 'Could not save your score');
+            }
+        } catch {
+            setSaveError('Could not save your score. Please try again.');
+        }
     };
 
     if (!started) {
@@ -76,6 +110,7 @@ const DashboardMockTests = () => {
                         Start Mock Test
                     </button>
                 </div>
+                <ScoreHistory history={history} />
             </div>
         );
     }
@@ -134,7 +169,7 @@ const DashboardMockTests = () => {
             <div className="flex gap-3 mt-6">
                 {!submitted ? (
                     <button
-                        onClick={() => setSubmitted(true)}
+                        onClick={submitTest}
                         disabled={!allAnswered}
                         className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300 disabled:opacity-60"
                     >
@@ -155,6 +190,43 @@ const DashboardMockTests = () => {
                     Exit
                 </button>
             </div>
+
+            {submitted && saveError && (
+                <p className="text-sm text-red-600 mt-3">{saveError}</p>
+            )}
+
+            <ScoreHistory history={history} />
+        </div>
+    );
+};
+
+// Simple read-only table of past attempts, newest first.
+const ScoreHistory = ({ history }) => {
+    if (history.length === 0) return null;
+
+    return (
+        <div className="mt-6">
+            <h3 className="text-md font-semibold text-gray-800 mb-2">Score History</h3>
+            <table className="w-full text-left text-sm">
+                <thead>
+                    <tr className="text-gray-500 border-b border-gray-200">
+                        <th className="py-1 pr-4">Date</th>
+                        <th className="py-1">Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {history.map((attempt) => (
+                        <tr key={attempt._id} className="border-b border-gray-100 last:border-b-0">
+                            <td className="py-1 pr-4 text-gray-600">
+                                {new Date(attempt.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="py-1 text-gray-800 font-medium">
+                                {attempt.score} / {attempt.total}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };

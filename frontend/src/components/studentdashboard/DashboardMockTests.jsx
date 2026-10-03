@@ -1,5 +1,6 @@
 // Mock test UI: 5 fixed questions, submits the score to the backend, and shows score history.
 import React, { useEffect, useMemo, useState } from 'react';
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import api from '../../lib/api';
 
 const QUESTIONS = [
@@ -200,13 +201,33 @@ const DashboardMockTests = () => {
     );
 };
 
-// Simple read-only table of past attempts, newest first.
+// Score trend chart (oldest → newest, left to right) plus a table of past attempts, newest first.
 const ScoreHistory = ({ history }) => {
     if (history.length === 0) return null;
+
+    const chartData = [...history].reverse().map((attempt, index) => ({
+        attempt: index + 1,
+        date: new Date(attempt.createdAt).toLocaleDateString(),
+        score: attempt.score,
+        total: attempt.total,
+    }));
 
     return (
         <div className="mt-6">
             <h3 className="text-md font-semibold text-gray-800 mb-2">Score History</h3>
+
+            <div className="h-56 w-full mb-4">
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 0, left: -16 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis dataKey="attempt" tick={{ fontSize: 12 }} label={{ value: 'Attempt', position: 'insideBottom', offset: -2, fontSize: 12 }} />
+                        <YAxis allowDecimals={false} domain={[0, (dataMax) => Math.max(dataMax, 5)]} tick={{ fontSize: 12 }} />
+                        <Tooltip labelFormatter={(value, payload) => payload?.[0]?.payload?.date ?? `Attempt ${value}`} formatter={(value, name, props) => [`${value} / ${props.payload.total}`, 'Score']} />
+                        <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                    </LineChart>
+                </ResponsiveContainer>
+            </div>
+
             <table className="w-full text-left text-sm">
                 <thead>
                     <tr className="text-gray-500 border-b border-gray-200">

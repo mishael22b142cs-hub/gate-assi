@@ -7,7 +7,7 @@ A full-stack web application to help students prepare for the GATE (Graduate Apt
 - **Authentication** — Secure signup and login with JWT-based sessions and HTTP-only cookies
 - **Student Dashboard** — Centralised hub for all student activity
 - **Profile Management** — Students can view and update their profile, college name, and photo
-- **Mock Tests** — A GATE CS practice test with scores saved to the database, plus a score history view
+- **Mock Tests** — A GATE CS practice test with scores saved to the database, plus a score history with a trend chart
 - **Study Materials** — Basic list of resources
 - **Communities** — Front-end prototype (posts are not saved yet; data resets on refresh)
 
@@ -26,6 +26,7 @@ A full-stack web application to help students prepare for the GATE (Graduate Apt
 - Tailwind CSS
 - Axios
 - Font Awesome
+- Recharts (score trend chart)
 
 **Backend**
 - Node.js + Express

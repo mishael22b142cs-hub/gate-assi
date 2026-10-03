@@ -6,11 +6,17 @@ A full-stack web application to help students prepare for the GATE (Graduate Apt
 
 - **Authentication** — Secure signup and login with JWT-based sessions and HTTP-only cookies
 - **Student Dashboard** — Centralised hub for all student activity
-- **Mock Tests** — Practice tests to simulate the GATE exam environment
-- **Study Materials** — Curated resources organised by subject
-- **Communities** — Discussion boards where students can post and interact
-- **Profile Management** — Students can update their profile, college name, and photo
-- **Admin Dashboard** — Separate panel for administrative control
+- **Profile Management** — Students can view and update their profile, college name, and photo
+- **Mock Tests** — A GATE CS practice test with scores saved to the database, plus a score history view
+- **Study Materials** — Basic list of resources
+- **Communities** — Front-end prototype (posts are not saved yet; data resets on refresh)
+
+## Future Improvements
+
+- Save community posts through a real backend API
+- Add more mock test questions and subjects
+- Admin panel for managing content and viewing student progress
+- Subject-wise study material links
 
 ## Tech Stack
 
@@ -46,22 +52,24 @@ gate-assi/
 │   │   ├── pages/
 │   │   │   ├── Home.jsx
 │   │   │   ├── AuthPage.jsx
-│   │   │   ├── StudentDashboard.jsx
-│   │   │   └── AdminDashboard.jsx
+│   │   │   └── StudentDashboard.jsx
 │   │   └── App.jsx
 │   └── package.json
 └── backend/
     ├── config/
     │   └── mongodb.js
     ├── controllers/
-    │   └── authStudentController.js
+    │   ├── authStudentController.js
+    │   └── testResultController.js
     ├── middleware/
     │   └── authMiddleware.js
     ├── models/
     │   ├── studModel.js
-    │   └── profModel.js
+    │   ├── profModel.js
+    │   └── testResultModel.js
     ├── routes/
-    │   └── authStudentRoutes.js
+    │   ├── authStudentRoutes.js
+    │   └── testResultRoutes.js
     ├── server.js
     └── package.json
 ```
@@ -129,6 +137,8 @@ The app will be available at `http://localhost:5173`.
 | POST | `/api/student/auth/logout` | Clear session cookie |
 | GET | `/api/student/auth/profile` | Get student profile (protected) |
 | PUT | `/api/student/auth/profile` | Update student profile (protected) |
+| POST | `/api/student/results` | Save a mock test score (protected) |
+| GET | `/api/student/results` | Get the last 10 mock test scores (protected) |
 
 ## Author
 

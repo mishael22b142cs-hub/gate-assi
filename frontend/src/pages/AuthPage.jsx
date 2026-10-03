@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faFacebookF, faTwitter } from '@fortawesome/free-brands-svg-icons';
-import api from '../lib/api';
+import api, { getRequestErrorMessage } from '../lib/api';
 import ProfileCompletionModal from '../components/ProfileCompletionModal';
 
 const AuthPage = () => {
@@ -42,7 +42,7 @@ const AuthPage = () => {
 
             setError(data?.message || 'Login failed');
         } catch (loginError) {
-            setError(loginError?.response?.data?.message || 'Unable to connect to the server');
+            setError(getRequestErrorMessage(loginError));
         } finally {
             setLoading(false);
         }
@@ -75,7 +75,7 @@ const AuthPage = () => {
 
             setError(data?.message || 'Signup failed');
         } catch (signupError) {
-            setError(signupError?.response?.data?.message || 'Unable to connect to the server');
+            setError(getRequestErrorMessage(signupError));
         } finally {
             setLoading(false);
         }
